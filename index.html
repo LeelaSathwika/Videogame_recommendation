@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Recommendation System</title>
+    <style>
+        /* Dark Theme without Background Image */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            background-color: #121212; /* Dark background */
+            color: #ffffff; /* White text */
+        }
+
+        /* Full-width container */
+        .container {
+            background: rgba(30, 30, 30, 0.9); /* Slightly lighter dark container */
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px auto;
+            width: 90%;
+            max-width: 1200px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+        }
+
+        h2 {
+            text-shadow: 0 0 10px cyan, 0 0 20px blue;
+            font-size: 2.5em;
+        }
+
+        /* Style form elements */
+        input, select, button {
+            padding: 12px;
+            margin: 10px;
+            border-radius: 8px;
+            border: none;
+            width: 100%;
+            max-width: 600px;
+            background: rgba(50, 50, 50, 0.8);
+            color: white;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        button {
+            background: linear-gradient(45deg, cyan, blue);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 10px cyan;
+            transition: 0.3s ease;
+        }
+
+        button:hover {
+            box-shadow: 0 0 25px cyan, 0 0 40px blue;
+            transform: scale(1.05);
+        }
+
+        /* Style the table */
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            background: rgba(40, 40, 40, 0.9);
+            color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+        }
+
+        th, td {
+            border: 1px solid cyan;
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        th {
+            background-color: rgba(0, 255, 255, 0.2);
+            text-shadow: 0 0 5px cyan;
+            font-size: 20px;
+        }
+
+        td {
+            background-color: rgba(50, 50, 50, 0.8);
+        }
+
+        #error-message {
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🎮 Game Recommendation System 🎮</h2>
+
+        <label>Genre:</label>
+        <select id="genre">
+            <option value="1">Battle</option>
+            <option value="2">Vehicle</option>
+            <option value="3">Thinking/Logical</option>
+            <option value="4">Casual</option>
+        </select>
+        <br>
+
+        <label>Gender Preference:</label>
+        <select id="gender">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Both">Both</option>
+        </select>
+        <br>
+
+        <label>Minimum Rating:</label>
+        <input type="number" id="rating" step="0.1" min="0" max="5" value="3.5">
+        <br>
+
+        <label>Platforms (comma-separated):</label>
+        <input type="text" id="platforms" placeholder="e.g., PC, Xbox">
+        <br>
+
+        <button onclick="getRecommendations()">Get Recommendations</button>
+
+        <p id="error-message"></p>
+
+        <h3>Recommended Games</h3>
+        <table id="recommendations">
+            <thead>
+                <tr>
+                    <th>S.No.</th>
+                    <th>Game Name</th>
+                    <th>Genre</th>
+                    <th>Rating</th>
+                    <th>Platforms</th>
+                    <th>Gender Preference</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        function getRecommendations() {
+            let genre = document.getElementById("genre").value;
+            let gender = document.getElementById("gender").value;
+            let rating = parseFloat(document.getElementById("rating").value);
+            let platforms = document.getElementById("platforms").value.trim();
+
+            document.getElementById("error-message").innerText = "";
+
+            fetch("/recommend", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ genre, gender, rating, platforms })
+            })
+            .then(response => response.json())
+            .then(data => {
+                let tableBody = document.querySelector("#recommendations tbody");
+                tableBody.innerHTML = data.length 
+                    ? data.map((game, index) => `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${game["Game Name"]}</td>
+                            <td>${game["Genre"]}</td>
+                            <td>${game["Rating"]}</td>
+                            <td>${game["Platform"]}</td>
+                            <td>${game["Gender Preference"]}</td>
+                        </tr>
+                    `).join("") 
+                    : "<tr><td colspan='6'>No games found.</td></tr>";
+            })
+            .catch(() => document.getElementById("error-message").innerText = "Error retrieving recommendations.");
+        }
+    </script>
+</body>
+</html>
